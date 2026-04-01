@@ -3,12 +3,13 @@
 import { useState, useCallback } from "react";
 import ChatPanel from "@/components/ChatPanel";
 import DiagramPanel from "@/components/DiagramPanel";
-import type { Message, ChatAPIResponse } from "@/types";
+import type { Message, Mode, ChatAPIResponse, ChatHistoryEntry } from "@/types";
 
 export default function CopilotPage() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [currentDiagram, setCurrentDiagram] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [mode, setMode] = useState<Mode>("plan");
 
   const handleSendMessage = useCallback(
     async (content: string) => {
@@ -17,17 +18,26 @@ export default function CopilotPage() {
         role: "user",
         content,
         timestamp: Date.now(),
+        mode,
       };
       setMessages((prev) => [...prev, userMessage]);
       setIsLoading(true);
 
       try {
+        // Build chat history from existing messages
+        const chatHistory: ChatHistoryEntry[] = messages.map((m) => ({
+          role: m.role,
+          content: m.content,
+        }));
+
         const res = await fetch("/api/chat", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             message: content,
             currentDiagram,
+            mode,
+            chatHistory,
           }),
         });
 
@@ -40,9 +50,11 @@ export default function CopilotPage() {
           role: "assistant",
           content: data.explanation,
           timestamp: Date.now(),
+          mode,
         };
         setMessages((prev) => [...prev, assistantMessage]);
 
+        // Only update diagram in Act mode (or if diagram is returned)
         if (data.diagram) {
           setCurrentDiagram(data.diagram);
         }
@@ -53,14 +65,19 @@ export default function CopilotPage() {
           role: "assistant",
           content: "Sorry, something went wrong. Please try again.",
           timestamp: Date.now(),
+          mode,
         };
         setMessages((prev) => [...prev, errorMessage]);
       } finally {
         setIsLoading(false);
       }
     },
-    [currentDiagram]
+    [currentDiagram, messages, mode]
   );
+
+  const handleModeChange = useCallback((newMode: Mode) => {
+    setMode(newMode);
+  }, []);
 
   return (
     <div className="flex h-screen w-screen overflow-hidden bg-background">
@@ -73,6 +90,8 @@ export default function CopilotPage() {
         <ChatPanel
           messages={messages}
           isLoading={isLoading}
+          mode={mode}
+          onModeChange={handleModeChange}
           onSendMessage={handleSendMessage}
         />
       </aside>

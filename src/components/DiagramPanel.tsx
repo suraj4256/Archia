@@ -6,6 +6,11 @@ interface DiagramPanelProps {
   diagram: string;
 }
 
+interface Point {
+  x: number;
+  y: number;
+}
+
 /* ── Icons ────────────────────────────────────────── */
 
 function LayersIcon() {
@@ -139,6 +144,241 @@ function DiagramError({ error, code }: { error: string; code: string }) {
   );
 }
 
+/* ── Node dragging utilities ──────────────────────── */
+
+function getTranslate(el: SVGGElement): Point {
+  const transform = el.getAttribute("transform") || "";
+  const match = transform.match(
+    /translate\(\s*([-\d.e+]+)\s*[,\s]\s*([-\d.e+]+)\s*\)/
+  );
+  return match
+    ? { x: parseFloat(match[1]), y: parseFloat(match[2]) }
+    : { x: 0, y: 0 };
+}
+
+/** Approximate the center of a Mermaid node in SVG-space. */
+function getNodeCenter(node: SVGGElement): Point {
+  const t = getTranslate(node);
+  // Mermaid flowchart nodes have their origin at center, so translate IS the center
+  // getBBox would give the local shape offset, but with htmlLabels it can be unreliable
+  // The translate alone is the best robust approximation
+  return t;
+}
+
+function dist(a: Point, b: Point): number {
+  return Math.hypot(a.x - b.x, a.y - b.y);
+}
+
+/** Extract the first x,y and last x,y from an SVG path d-string. */
+function getPathEndpoints(d: string): { start: Point; end: Point } | null {
+  const nums: number[] = [];
+  const re = /-?[\d.]+(?:e[+-]?\d+)?/g;
+  let m: RegExpExecArray | null;
+  while ((m = re.exec(d)) !== null) {
+    nums.push(parseFloat(m[0]));
+  }
+  if (nums.length < 4) return null;
+  return {
+    start: { x: nums[0], y: nums[1] },
+    end: { x: nums[nums.length - 2], y: nums[nums.length - 1] },
+  };
+}
+
+/**
+ * Shift all coordinate-pairs in an SVG path d-string.
+ * The first pair shifts by sourceDelta, the last by targetDelta,
+ * and intermediate pairs interpolate linearly between the two.
+ */
+function shiftPathCoords(
+  d: string,
+  sourceDelta: Point,
+  targetDelta: Point
+): string {
+  // 1. Collect every number
+  const extractRe = /-?[\d.]+(?:e[+-]?\d+)?/g;
+  const numbers: number[] = [];
+  let em: RegExpExecArray | null;
+  while ((em = extractRe.exec(d)) !== null) {
+    numbers.push(parseFloat(em[0]));
+  }
+
+  const numPairs = Math.floor(numbers.length / 2);
+  if (numPairs < 2) return d;
+
+  // 2. Apply gradient interpolation on x,y pairs
+  const modified = [...numbers];
+  for (let i = 0; i < numPairs; i++) {
+    const t = i / (numPairs - 1); // 0 at start → 1 at end
+    modified[i * 2] += sourceDelta.x * (1 - t) + targetDelta.x * t;
+    modified[i * 2 + 1] += sourceDelta.y * (1 - t) + targetDelta.y * t;
+  }
+
+  // 3. Replace numbers in-place (use a NEW regex to avoid shared state)
+  let idx = 0;
+  const replaceRe = /-?[\d.]+(?:e[+-]?\d+)?/g;
+  return d.replace(replaceRe, () => modified[idx++].toFixed(2));
+}
+
+interface EdgeInfo {
+  pathEl: SVGPathElement;
+  sourceId: string;
+  targetId: string;
+  originalD: string;
+}
+
+/**
+ * Wire up per-node drag handlers on the rendered Mermaid SVG.
+ * Nodes can be grabbed and repositioned; connected edges follow smoothly.
+ * Returns a cleanup function.
+ */
+function setupNodeDragging(
+  svgEl: SVGSVGElement,
+  zoomRef: React.RefObject<number>
+): () => void {
+  const cleanups: (() => void)[] = [];
+
+  // ── Collect nodes ─────────────────────────────────
+  const nodeEls = Array.from(svgEl.querySelectorAll("g.node")) as SVGGElement[];
+  if (nodeEls.length === 0) return () => {};
+
+  const nodeMap = new Map<string, { el: SVGGElement; center: Point }>();
+  nodeEls.forEach((el) => {
+    nodeMap.set(el.id, { el, center: getNodeCenter(el) });
+  });
+
+  // ── Collect ALL <path> elements inside .edgePaths ──
+  const allEdgePaths = Array.from(
+    svgEl.querySelectorAll(".edgePaths path, .edgePath path")
+  ) as SVGPathElement[];
+
+  // ── Map each edge-path to source & target node ────
+  const edges: EdgeInfo[] = [];
+
+  for (const pathEl of allEdgePaths) {
+    const d = pathEl.getAttribute("d");
+    if (!d) continue;
+
+    const ep = getPathEndpoints(d);
+    if (!ep) continue;
+
+    // Find the closest node to each endpoint
+    let sourceId = "";
+    let targetId = "";
+    let bestSD = Infinity;
+    let bestTD = Infinity;
+
+    nodeMap.forEach(({ center }, id) => {
+      const ds = dist(ep.start, center);
+      const dt = dist(ep.end, center);
+      if (ds < bestSD) { bestSD = ds; sourceId = id; }
+      if (dt < bestTD) { bestTD = dt; targetId = id; }
+    });
+
+    if (sourceId && targetId) {
+      edges.push({ pathEl, sourceId, targetId, originalD: d });
+    }
+  }
+
+  // ── Collect edge labels ───────────────────────────
+  const edgeLabelEls = Array.from(
+    svgEl.querySelectorAll(".edgeLabel")
+  ) as SVGGElement[];
+  const edgeLabelOrigT = edgeLabelEls.map((el) => getTranslate(el));
+
+  // ── Track per-node displacement ───────────────────
+  const nodeDeltas = new Map<string, Point>();
+  nodeMap.forEach((_, id) => nodeDeltas.set(id, { x: 0, y: 0 }));
+
+  /** Update all edge paths & labels after any node moves. */
+  function updateEdges() {
+    for (const edge of edges) {
+      const sd = nodeDeltas.get(edge.sourceId) || { x: 0, y: 0 };
+      const td = nodeDeltas.get(edge.targetId) || { x: 0, y: 0 };
+
+      // Skip update if both deltas are zero
+      if (sd.x === 0 && sd.y === 0 && td.x === 0 && td.y === 0) continue;
+
+      const newD = shiftPathCoords(edge.originalD, sd, td);
+      edge.pathEl.setAttribute("d", newD);
+    }
+
+    // Move edge labels by the avg delta of their adjacent nodes
+    // (best-effort: labels are ordered same as edgePaths in most Mermaid versions)
+    for (let i = 0; i < edgeLabelEls.length && i < edges.length; i++) {
+      const sd = nodeDeltas.get(edges[i].sourceId) || { x: 0, y: 0 };
+      const td = nodeDeltas.get(edges[i].targetId) || { x: 0, y: 0 };
+      const orig = edgeLabelOrigT[i];
+      edgeLabelEls[i].setAttribute(
+        "transform",
+        `translate(${orig.x + (sd.x + td.x) / 2},${orig.y + (sd.y + td.y) / 2})`
+      );
+    }
+  }
+
+  // ── Wire each node for dragging ───────────────────
+  nodeEls.forEach((nodeEl) => {
+    nodeEl.style.cursor = "grab";
+
+    let dragging = false;
+    let startMouse: Point = { x: 0, y: 0 };
+    let startTranslate: Point = { x: 0, y: 0 };
+    const origTranslate = getTranslate(nodeEl);
+
+    const onDown = (e: MouseEvent) => {
+      e.stopPropagation();
+      e.preventDefault();
+      dragging = true;
+      startMouse = { x: e.clientX, y: e.clientY };
+      startTranslate = getTranslate(nodeEl);
+      nodeEl.style.cursor = "grabbing";
+      nodeEl.style.filter = "drop-shadow(0 0 8px rgba(99,102,241,0.5))";
+      nodeEl.parentElement?.appendChild(nodeEl); // bring to front
+    };
+
+    const onMove = (e: MouseEvent) => {
+      if (!dragging) return;
+      e.stopPropagation();
+      e.preventDefault();
+
+      const z = zoomRef.current ?? 1;
+      const dx = (e.clientX - startMouse.x) / z;
+      const dy = (e.clientY - startMouse.y) / z;
+      const nx = startTranslate.x + dx;
+      const ny = startTranslate.y + dy;
+      nodeEl.setAttribute("transform", `translate(${nx},${ny})`);
+
+      // Delta from original position (translate IS the center for Mermaid nodes)
+      nodeDeltas.set(nodeEl.id, {
+        x: nx - origTranslate.x,
+        y: ny - origTranslate.y,
+      });
+
+      updateEdges();
+    };
+
+    const onUp = () => {
+      if (!dragging) return;
+      dragging = false;
+      nodeEl.style.cursor = "grab";
+      nodeEl.style.filter = "none";
+    };
+
+    nodeEl.addEventListener("mousedown", onDown);
+    svgEl.addEventListener("mousemove", onMove);
+    svgEl.addEventListener("mouseup", onUp);
+    svgEl.addEventListener("mouseleave", onUp);
+
+    cleanups.push(() => {
+      nodeEl.removeEventListener("mousedown", onDown);
+      svgEl.removeEventListener("mousemove", onMove);
+      svgEl.removeEventListener("mouseup", onUp);
+      svgEl.removeEventListener("mouseleave", onUp);
+    });
+  });
+
+  return () => cleanups.forEach((fn) => fn());
+}
+
 /* ── Main Diagram Panel ───────────────────────────── */
 
 export default function DiagramPanel({ diagram }: DiagramPanelProps) {
@@ -152,6 +392,12 @@ export default function DiagramPanel({ diagram }: DiagramPanelProps) {
   const [copied, setCopied] = useState(false);
   const [svgContent, setSvgContent] = useState<string>("");
 
+  // Keep a ref so imperative SVG handlers always read current zoom
+  const zoomRef = useRef(zoom);
+  useEffect(() => {
+    zoomRef.current = zoom;
+  }, [zoom]);
+
   const renderDiagram = useCallback(async () => {
     if (!diagram) {
       setSvgContent("");
@@ -161,7 +407,6 @@ export default function DiagramPanel({ diagram }: DiagramPanelProps) {
     setError(null);
 
     try {
-      // Dynamic import of mermaid to avoid SSR issues
       const mermaid = (await import("mermaid")).default;
 
       mermaid.initialize({
@@ -212,19 +457,28 @@ export default function DiagramPanel({ diagram }: DiagramPanelProps) {
     renderDiagram();
   }, [renderDiagram]);
 
-  // Set SVG innerHTML when content changes
+  // Set SVG innerHTML and wire up node dragging
   useEffect(() => {
-    if (containerRef.current && svgContent) {
-      containerRef.current.innerHTML = svgContent;
-      // Ensure the SVG is visible and properly sized
-      const svgEl = containerRef.current.querySelector("svg");
-      if (svgEl) {
-        svgEl.style.maxWidth = "100%";
-        svgEl.style.height = "auto";
-        svgEl.style.minHeight = "200px";
-        svgEl.removeAttribute("width");
-      }
-    }
+    if (!containerRef.current || !svgContent) return;
+
+    containerRef.current.innerHTML = svgContent;
+    const svgEl = containerRef.current.querySelector("svg");
+    if (!svgEl) return;
+
+    svgEl.style.maxWidth = "100%";
+    svgEl.style.height = "auto";
+    svgEl.style.minHeight = "200px";
+    svgEl.style.overflow = "visible";
+    svgEl.removeAttribute("width");
+
+    // Prevent clipping when nodes are dragged outside the original viewBox
+    svgEl.querySelectorAll("g").forEach((g) => {
+      (g as SVGGElement).style.overflow = "visible";
+    });
+
+    // Setup individual node dragging — returns a cleanup function
+    const cleanup = setupNodeDragging(svgEl, zoomRef);
+    return cleanup;
   }, [svgContent]);
 
   // Reset zoom/pan on new diagram
@@ -243,6 +497,9 @@ export default function DiagramPanel({ diagram }: DiagramPanelProps) {
 
   const handleMouseDown = (e: React.MouseEvent) => {
     if (e.button !== 0) return;
+    // If the click is on a diagram node, let node-drag handle it
+    const target = e.target as Element;
+    if (target.closest(".node")) return;
     setIsDragging(true);
     dragStart.current = { x: e.clientX, y: e.clientY };
     panStart.current = { ...pan };
@@ -287,7 +544,7 @@ export default function DiagramPanel({ diagram }: DiagramPanelProps) {
             <p className="text-[11px] text-zinc-500">
               {isEmpty
                 ? "Waiting for input…"
-                : "Live preview · Drag to pan"}
+                : "Drag nodes to rearrange · Scroll to zoom"}
             </p>
           </div>
         </div>
@@ -403,7 +660,7 @@ export default function DiagramPanel({ diagram }: DiagramPanelProps) {
           )}
         </div>
         <span className="text-[10px] text-zinc-600 font-mono">
-          mermaid.js
+          mermaid.js · interactive
         </span>
       </div>
     </div>
