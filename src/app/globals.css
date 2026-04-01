@@ -1,71 +1,264 @@
 @import "tailwindcss";
 
+/* ── Windows 2000 Design Tokens ──────────────────── */
 :root {
-  --background: #09090b;
-  --foreground: #fafafa;
-  --card: #111113;
-  --card-hover: #18181b;
-  --border: rgba(255, 255, 255, 0.06);
-  --border-hover: rgba(255, 255, 255, 0.12);
-  --accent-1: #6366f1;
-  --accent-2: #8b5cf6;
-  --accent-3: #a78bfa;
-  --glass-bg: rgba(17, 17, 19, 0.7);
-  --glass-border: rgba(255, 255, 255, 0.08);
-  --muted: #71717a;
-  --muted-foreground: #a1a1aa;
-  --success: #22c55e;
-  --glow: rgba(99, 102, 241, 0.15);
+  /* System colors */
+  --background: #d4d0c8;
+  --foreground: #000000;
+  --win-desktop: #3a6ea5;  /* Classic Win2K desktop blue */
+  --win-titlebar: #0054e3;
+  --win-titlebar-inactive: #7a96df;
+  --win-titlebar-text: #ffffff;
+  --win-surface: #d4d0c8;
+  --win-surface-dark: #808080;
+  --win-surface-mid: #c0c0c0;
+  --win-border-light: #ffffff;
+  --win-border-dark: #424242;
+  --win-border-mid: #808080;
+  --win-btn-face: #d4d0c8;
+  --win-btn-highlight: #ffffff;
+  --win-btn-shadow: #808080;
+  --win-btn-darkshadow: #424242;
+  --win-selection: #0054e3;
+  --win-selection-text: #ffffff;
+  --win-link: #0000ff;
+  --win-groupbox: #d4d0c8;
+  --win-inset: #ffffff;
+  --win-text: #000000;
+  --win-text-muted: #444444;
+  --win-accent: #0054e3;
+  --win-accent-2: #3a6ea5;
+  --win-green: #008000;
+  --win-red: #ff0000;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --color-card: var(--card);
-  --color-card-hover: var(--card-hover);
-  --color-border: var(--border);
-  --color-border-hover: var(--border-hover);
-  --color-accent-1: var(--accent-1);
-  --color-accent-2: var(--accent-2);
-  --color-accent-3: var(--accent-3);
-  --color-glass-bg: var(--glass-bg);
-  --color-glass-border: var(--glass-border);
-  --color-muted: var(--muted);
-  --color-muted-foreground: var(--muted-foreground);
-  --color-success: var(--success);
-  --color-glow: var(--glow);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-win-desktop: var(--win-desktop);
+  --color-win-titlebar: var(--win-titlebar);
+  --color-win-surface: var(--win-surface);
+  --color-win-surface-dark: var(--win-surface-dark);
+  --color-win-surface-mid: var(--win-surface-mid);
+  --color-win-accent: var(--win-accent);
+  --color-win-accent-2: var(--win-accent-2);
+  --color-win-text: var(--win-text);
+  --color-win-text-muted: var(--win-text-muted);
+  --color-win-selection: var(--win-selection);
+  --color-win-green: var(--win-green);
+  --font-sans: var(--font-tahoma), Tahoma, 'MS Sans Serif', system-ui, sans-serif;
+  --font-mono: var(--font-courier), 'Courier New', monospace;
 }
 
-/* ── Base ─────────────────────────────────────────── */
+/* ── Base Reset ───────────────────────────────────── */
 html {
-  color-scheme: dark;
+  color-scheme: light;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: var(--font-geist-sans), system-ui, -apple-system, sans-serif;
+  background: var(--win-desktop);
+  color: var(--win-text);
+  font-family: Tahoma, 'MS Sans Serif', system-ui, sans-serif;
+  font-size: 11px;
 }
 
-/* ── Scrollbar ────────────────────────────────────── */
+/* ── Scrollbar — Win2K style ─────────────────────── */
 ::-webkit-scrollbar {
-  width: 6px;
+  width: 16px;
+  height: 16px;
 }
 ::-webkit-scrollbar-track {
-  background: transparent;
+  background: var(--win-surface);
+  border-left: 1px solid var(--win-border-mid);
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 3px;
+  background: var(--win-surface);
+  border-top: 1px solid var(--win-border-light);
+  border-left: 1px solid var(--win-border-light);
+  border-right: 1px solid var(--win-border-dark);
+  border-bottom: 1px solid var(--win-border-dark);
 }
-::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.2);
+::-webkit-scrollbar-button {
+  background: var(--win-surface);
+  border-top: 1px solid var(--win-border-light);
+  border-left: 1px solid var(--win-border-light);
+  border-right: 1px solid var(--win-border-dark);
+  border-bottom: 1px solid var(--win-border-dark);
+  display: block;
+  height: 16px;
 }
 
-/* ── Animations ───────────────────────────────────── */
-@keyframes fadeInUp {
+/* ── Win2K raised button effect ─────────────────── */
+.win-btn {
+  background: var(--win-btn-face);
+  border-top: 1px solid var(--win-btn-highlight);
+  border-left: 1px solid var(--win-btn-highlight);
+  border-right: 1px solid var(--win-btn-shadow);
+  border-bottom: 1px solid var(--win-btn-shadow);
+  outline: 1px solid var(--win-btn-darkshadow);
+  outline-offset: -1px;
+  font-family: Tahoma, sans-serif;
+  font-size: 11px;
+  cursor: default;
+  padding: 3px 10px;
+  color: var(--win-text);
+  white-space: nowrap;
+  user-select: none;
+}
+.win-btn:active {
+  border-top: 1px solid var(--win-btn-shadow);
+  border-left: 1px solid var(--win-btn-shadow);
+  border-right: 1px solid var(--win-btn-highlight);
+  border-bottom: 1px solid var(--win-btn-highlight);
+}
+
+/* Primary/default button */
+.win-btn-primary {
+  background: var(--win-btn-face);
+  border-top: 2px solid var(--win-btn-highlight);
+  border-left: 2px solid var(--win-btn-highlight);
+  border-right: 2px solid var(--win-btn-darkshadow);
+  border-bottom: 2px solid var(--win-btn-darkshadow);
+  font-family: Tahoma, sans-serif;
+  font-size: 11px;
+  font-weight: bold;
+  cursor: default;
+  padding: 4px 16px;
+  color: var(--win-text);
+  user-select: none;
+}
+
+/* ── Win2K inset (sunken) panel ──────────────────── */
+.win-inset {
+  background: var(--win-inset);
+  border-top: 1px solid var(--win-btn-shadow);
+  border-left: 1px solid var(--win-btn-shadow);
+  border-right: 1px solid var(--win-btn-highlight);
+  border-bottom: 1px solid var(--win-btn-highlight);
+  outline: 1px solid var(--win-btn-darkshadow);
+  outline-offset: -1px;
+}
+
+/* ── Win2K raised panel ──────────────────────────── */
+.win-raised {
+  background: var(--win-surface);
+  border-top: 1px solid var(--win-btn-highlight);
+  border-left: 1px solid var(--win-btn-highlight);
+  border-right: 1px solid var(--win-btn-shadow);
+  border-bottom: 1px solid var(--win-btn-shadow);
+  outline: 1px solid var(--win-btn-darkshadow);
+  outline-offset: -1px;
+}
+
+/* ── Win2K window chrome ─────────────────────────── */
+.win-window {
+  background: var(--win-surface);
+  border-top: 2px solid var(--win-btn-highlight);
+  border-left: 2px solid var(--win-btn-highlight);
+  border-right: 2px solid var(--win-btn-darkshadow);
+  border-bottom: 2px solid var(--win-btn-darkshadow);
+  outline: 1px solid var(--win-border-mid);
+  outline-offset: -1px;
+}
+
+/* ── Win2K titlebar ──────────────────────────────── */
+.win-titlebar {
+  background: linear-gradient(to right, var(--win-titlebar), #1084d0);
+  color: var(--win-titlebar-text);
+  font-family: Tahoma, sans-serif;
+  font-size: 11px;
+  font-weight: bold;
+  padding: 3px 4px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  user-select: none;
+}
+
+/* ── Win2K groupbox ──────────────────────────────── */
+.win-groupbox {
+  border: 1px solid var(--win-btn-shadow);
+  border-top: 0;
+  background: var(--win-surface);
+  position: relative;
+  padding: 16px 12px 12px;
+}
+
+/* ── Win2K menu bar ──────────────────────────────── */
+.win-menubar {
+  background: var(--win-surface);
+  border-bottom: 1px solid var(--win-border-mid);
+  font-family: Tahoma, sans-serif;
+  font-size: 11px;
+  display: flex;
+  gap: 0;
+  padding: 2px 2px;
+}
+.win-menuitem {
+  padding: 2px 8px;
+  cursor: default;
+  color: var(--win-text);
+  text-decoration: none;
+}
+.win-menuitem:hover {
+  background: var(--win-selection);
+  color: var(--win-selection-text);
+}
+
+/* ── Toolbar ─────────────────────────────────────── */
+.win-toolbar {
+  background: var(--win-surface);
+  border-bottom: 1px solid var(--win-border-mid);
+  padding: 2px;
+  display: flex;
+  gap: 2px;
+  align-items: center;
+}
+
+/* ── Status bar ──────────────────────────────────── */
+.win-statusbar {
+  background: var(--win-surface);
+  border-top: 1px solid var(--win-border-mid);
+  border-top-color: var(--win-btn-shadow);
+  padding: 2px 6px;
+  font-family: Tahoma, sans-serif;
+  font-size: 11px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.win-statusbar-panel {
+  border-top: 1px solid var(--win-btn-shadow);
+  border-left: 1px solid var(--win-btn-shadow);
+  border-right: 1px solid var(--win-btn-highlight);
+  border-bottom: 1px solid var(--win-btn-highlight);
+  padding: 1px 6px;
+  font-size: 11px;
+}
+
+/* ── Win2K selection highlight ───────────────────── */
+::selection {
+  background: var(--win-selection);
+  color: var(--win-selection-text);
+}
+
+/* ── Link ────────────────────────────────────────── */
+a {
+  color: var(--win-link);
+}
+
+/* ── Animations ──────────────────────────────────── */
+@keyframes blink-cursor {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+@keyframes marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+@keyframes reveal {
   from {
     opacity: 0;
     transform: translateY(12px);
@@ -76,90 +269,28 @@ body {
   }
 }
 
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-@keyframes slideInLeft {
-  from {
-    opacity: 0;
-    transform: translateX(-16px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
-}
-
-@keyframes slideInRight {
-  from {
-    opacity: 0;
-    transform: translateX(16px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
-}
-
-@keyframes pulse-dot {
-  0%, 80%, 100% {
-    opacity: 0.3;
-    transform: scale(0.8);
-  }
-  40% {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-
-@keyframes shimmer {
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
-}
-
-@keyframes breathe {
-  0%, 100% { opacity: 0.5; }
-  50% { opacity: 1; }
-}
-
-@keyframes gradient-shift {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
-}
-
 .animate-fade-in-up {
-  animation: fadeInUp 0.4s ease-out forwards;
+  animation: reveal 0.3s ease-out forwards;
 }
 
-.animate-fade-in {
-  animation: fadeIn 0.5s ease-out forwards;
+.animate-blink {
+  animation: blink-cursor 1s step-end infinite;
 }
 
-.animate-slide-in-left {
-  animation: slideInLeft 0.35s ease-out forwards;
+/* Intersection observer reveal */
+.reveal-on-scroll {
+  opacity: 0;
+  transform: translateY(16px);
+  transition: opacity 0.4s ease-out, transform 0.4s ease-out;
+}
+.reveal-on-scroll.revealed {
+  opacity: 1;
+  transform: translateY(0);
 }
 
-.animate-slide-in-right {
-  animation: slideInRight 0.35s ease-out forwards;
-}
-
-.animate-shimmer {
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.04), transparent);
-  background-size: 200% 100%;
-  animation: shimmer 2s infinite;
-}
-
-.animate-gradient {
-  background-size: 200% 200%;
-  animation: gradient-shift 3s ease infinite;
-}
-
-/* ── Typing indicator dots ────────────────────────── */
+/* ── Typing indicator ────────────────────────────── */
 .typing-dot {
-  animation: pulse-dot 1.4s infinite ease-in-out;
+  animation: blink-cursor 1.4s infinite ease-in-out;
 }
 .typing-dot:nth-child(2) {
   animation-delay: 0.2s;
@@ -168,125 +299,29 @@ body {
   animation-delay: 0.4s;
 }
 
-/* ── Glass card ───────────────────────────────────── */
-.glass-card {
-  background: var(--glass-bg);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid var(--glass-border);
+/* ── Progress bar (Win2K) ────────────────────────── */
+.win-progress {
+  background: var(--win-inset);
+  border-top: 1px solid var(--win-btn-shadow);
+  border-left: 1px solid var(--win-btn-shadow);
+  border-right: 1px solid var(--win-btn-highlight);
+  border-bottom: 1px solid var(--win-btn-highlight);
+  height: 16px;
+  overflow: hidden;
+}
+.win-progress-bar {
+  height: 100%;
+  background: var(--win-selection);
+  display: flex;
+  gap: 2px;
+  align-items: center;
+  padding: 0 2px;
 }
 
-/* ── Gradient border ──────────────────────────────── */
-.gradient-border {
-  position: relative;
-}
-.gradient-border::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  padding: 1px;
-  background: linear-gradient(135deg, var(--accent-1), var(--accent-2), transparent, transparent);
-  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-  mask-composite: exclude;
-  -webkit-mask-composite: xor;
-  pointer-events: none;
-  opacity: 0.5;
-}
-
-/* ── Mermaid overrides ────────────────────────────── */
-.mermaid-container svg {
-  max-width: 100%;
-  height: auto;
-}
-
-.mermaid-container .node rect,
-.mermaid-container .node polygon,
-.mermaid-container .node circle {
-  rx: 8;
-  ry: 8;
-}
-
-/* ── Glow effect ──────────────────────────────────── */
-.glow {
-  box-shadow: 0 0 20px var(--glow), 0 0 60px rgba(99, 102, 241, 0.05);
-}
-
-.glow-text {
-  text-shadow: 0 0 20px rgba(99, 102, 241, 0.5);
-}
-
-/* ── Landing page ─────────────────────────────────── */
-@keyframes float {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-10px); }
-}
-
-@keyframes reveal {
-  from {
-    opacity: 0;
-    transform: translateY(30px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes orbit {
-  from { transform: rotate(0deg) translateX(140px) rotate(0deg); }
-  to { transform: rotate(360deg) translateX(140px) rotate(-360deg); }
-}
-
-@keyframes pulse-ring {
-  0% { transform: scale(1); opacity: 0.3; }
-  50% { transform: scale(1.15); opacity: 0; }
-  100% { transform: scale(1); opacity: 0; }
-}
-
-@keyframes marquee {
-  0% { transform: translateX(0); }
-  100% { transform: translateX(-50%); }
-}
-
-.animate-float {
-  animation: float 6s ease-in-out infinite;
-}
-
-.animate-reveal {
-  animation: reveal 0.7s ease-out forwards;
-}
-
-.animate-orbit {
-  animation: orbit 20s linear infinite;
-}
-
-.animate-pulse-ring {
-  animation: pulse-ring 3s ease-out infinite;
-}
-
-.gradient-text {
-  background: linear-gradient(135deg, #fff 0%, #a78bfa 50%, #6366f1 100%);
+/* ── Gradient title text ─────────────────────────── */
+.win-title-gradient {
+  background: linear-gradient(to right, #0055ea, #1890ff);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
-
-.gradient-text-accent {
-  background: linear-gradient(135deg, #6366f1, #8b5cf6, #a78bfa);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-/* Intersection observer reveal */
-.reveal-on-scroll {
-  opacity: 0;
-  transform: translateY(30px);
-  transition: opacity 0.7s ease-out, transform 0.7s ease-out;
-}
-.reveal-on-scroll.revealed {
-  opacity: 1;
-  transform: translateY(0);
-}
-
