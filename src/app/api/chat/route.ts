@@ -18,38 +18,145 @@ Return STRICT JSON:
 const MOCK_RESPONSES: Record<string, ChatAPIResponse> = {
   default: {
     diagram: `graph TB
-    Client["Client App"]
-    LB["Load Balancer"]
-    API1["API Server 1"]
-    API2["API Server 2"]
-    Cache["Redis Cache"]
-    DB[("PostgreSQL")]
-    Queue["Message Queue"]
-    Worker["Worker Service"]
-    Storage[("Object Storage")]
+    %% Client Layer
+    Client["Client (Web/Mobile)"]
+    DNS["DNS"]
+    CDN["CDN / Edge Cache"]
+    WAF["WAF + Rate Limiter"]
 
-    Client --> LB
-    LB --> API1
-    LB --> API2
-    API1 --> DB
-    API2 --> DB
-    API1 --> Cache
-    API2 --> Cache
-    API1 --> Queue
-    API2 --> Queue
-    Queue --> Worker
-    Worker --> Storage
-    Worker --> DB
+    %% Entry Layer
+    LB["Global Load Balancer"]
+    APIGW["API Gateway"]
 
+    %% Service Layer
+    Auth["Auth Service"]
+    API1["App Server 1"]
+    API2["App Server 2"]
+    API3["App Server 3"]
+
+    %% Caching Layer
+    Redis["Redis Cache Cluster"]
+    Session["Session Store"]
+
+    %% Messaging Layer
+    MQ["Message Queue (Kafka/SQS)"]
+    DLQ["Dead Letter Queue"]
+
+    %% Worker Layer
+    Worker1["Worker Service 1"]
+    Worker2["Worker Service 2"]
+
+    %% Data Layer
+    DBPrimary[("PostgreSQL Primary")]
+    DBReplica1[("Read Replica 1")]
+    DBReplica2[("Read Replica 2")]
+    DBShard[("Sharded DB Cluster")]
+
+    %% Storage
+    ObjectStore[("Object Storage (S3)")]
+    Search["Search Engine (Elasticsearch)"]
+
+    %% Observability
+    Logs["Logging Service"]
+    Metrics["Metrics (Prometheus)"]
+    Tracing["Tracing (Jaeger)"]
+
+    %% Flow
+    Client --> DNS --> CDN --> WAF --> LB --> APIGW
+
+    APIGW --> Auth
+    APIGW --> API1
+    APIGW --> API2
+    APIGW --> API3
+
+    %% Caching
+    API1 --> Redis
+    API2 --> Redis
+    API3 --> Redis
+
+    API1 --> Session
+    API2 --> Session
+    API3 --> Session
+
+    %% DB Reads/Writes
+    API1 --> DBPrimary
+    API2 --> DBPrimary
+    API3 --> DBPrimary
+
+    DBPrimary --> DBReplica1
+    DBPrimary --> DBReplica2
+
+    API1 --> DBReplica1
+    API2 --> DBReplica2
+
+    DBPrimary --> DBShard
+
+    %% Messaging
+    API1 --> MQ
+    API2 --> MQ
+    API3 --> MQ
+
+    MQ --> Worker1
+    MQ --> Worker2
+
+    MQ --> DLQ
+
+    %% Workers
+    Worker1 --> ObjectStore
+    Worker2 --> ObjectStore
+
+    Worker1 --> DBPrimary
+    Worker2 --> DBPrimary
+
+    Worker1 --> Search
+    Worker2 --> Search
+
+    %% Observability
+    API1 --> Logs
+    API2 --> Logs
+    API3 --> Logs
+    Worker1 --> Logs
+    Worker2 --> Logs
+
+    API1 --> Metrics
+    API2 --> Metrics
+    API3 --> Metrics
+
+    API1 --> Tracing
+    API2 --> Tracing
+    API3 --> Tracing
+
+    %% Styling
     style Client fill:#6366f1,stroke:#818cf8,color:#fff
+    style CDN fill:#06b6d4,stroke:#22d3ee,color:#fff
+    style WAF fill:#06b6d4,stroke:#22d3ee,color:#fff
     style LB fill:#8b5cf6,stroke:#a78bfa,color:#fff
+    style APIGW fill:#8b5cf6,stroke:#a78bfa,color:#fff
+
     style API1 fill:#3b82f6,stroke:#60a5fa,color:#fff
     style API2 fill:#3b82f6,stroke:#60a5fa,color:#fff
-    style Cache fill:#f59e0b,stroke:#fbbf24,color:#000
-    style DB fill:#10b981,stroke:#34d399,color:#fff
-    style Queue fill:#ec4899,stroke:#f472b6,color:#fff
-    style Worker fill:#14b8a6,stroke:#2dd4bf,color:#fff
-    style Storage fill:#f97316,stroke:#fb923c,color:#fff`,
+    style API3 fill:#3b82f6,stroke:#60a5fa,color:#fff
+
+    style Redis fill:#f59e0b,stroke:#fbbf24,color:#000
+    style Session fill:#f59e0b,stroke:#fbbf24,color:#000
+
+    style DBPrimary fill:#10b981,stroke:#34d399,color:#fff
+    style DBReplica1 fill:#10b981,stroke:#34d399,color:#fff
+    style DBReplica2 fill:#10b981,stroke:#34d399,color:#fff
+    style DBShard fill:#10b981,stroke:#34d399,color:#fff
+
+    style MQ fill:#ec4899,stroke:#f472b6,color:#fff
+    style DLQ fill:#ec4899,stroke:#f472b6,color:#fff
+
+    style Worker1 fill:#14b8a6,stroke:#2dd4bf,color:#fff
+    style Worker2 fill:#14b8a6,stroke:#2dd4bf,color:#fff
+
+    style ObjectStore fill:#f97316,stroke:#fb923c,color:#fff
+    style Search fill:#22c55e,stroke:#4ade80,color:#fff
+
+    style Logs fill:#64748b,stroke:#94a3b8,color:#fff
+    style Metrics fill:#64748b,stroke:#94a3b8,color:#fff
+    style Tracing fill:#64748b,stroke:#94a3b8,color:#fff`,
     explanation:
       "I've designed a scalable web architecture with load balancing across two API servers, Redis caching for performance, PostgreSQL for persistent storage, a message queue for async processing, and a worker service for background tasks with object storage.",
   },
