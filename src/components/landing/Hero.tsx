@@ -4,188 +4,386 @@ import Link from "next/link";
 
 export default function Hero() {
   return (
-    <section className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden px-6 pt-16">
-      {/* ── Ambient blurs ───────────────────────────── */}
-      <div className="pointer-events-none absolute inset-0">
-        <div className="absolute left-1/2 top-0 h-[600px] w-[800px] -translate-x-1/2 -translate-y-1/3 rounded-full bg-accent-1/[0.08] blur-[120px]" />
-        <div className="absolute bottom-0 right-0 h-[400px] w-[400px] translate-x-1/4 rounded-full bg-accent-2/[0.06] blur-[100px]" />
+    <section
+      className="relative flex min-h-screen flex-col items-center justify-center px-6 pt-36 pb-16"
+      style={{ background: "#3a6ea5", fontFamily: "Tahoma, 'MS Sans Serif', sans-serif" }}
+    >
+      {/* Desktop pattern */}
+      <div
+        className="pointer-events-none absolute inset-0"
+        style={{
+          backgroundImage:
+            "repeating-linear-gradient(45deg, rgba(255,255,255,0.02) 0px, rgba(255,255,255,0.02) 1px, transparent 1px, transparent 4px)",
+        }}
+        aria-hidden="true"
+      />
+
+      {/* ── Main Window ── */}
+      <div className="win-window relative w-full max-w-3xl animate-fade-in-up">
+        {/* Title bar */}
+        <div className="win-titlebar">
+          <div className="flex h-4 w-4 shrink-0 items-center justify-center" aria-hidden="true">
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+              <rect x="0" y="0" width="7" height="7" fill="#ff0000" />
+              <rect x="9" y="0" width="7" height="7" fill="#00ff00" />
+              <rect x="0" y="9" width="7" height="7" fill="#0000ff" />
+              <rect x="9" y="9" width="7" height="7" fill="#ffff00" />
+            </svg>
+          </div>
+          <span className="flex-1 text-xs font-bold text-white">
+            Archia — AI System Design Copilot
+          </span>
+          {/* Window controls */}
+          <div className="flex gap-1" role="group" aria-label="Window controls">
+            {["_", "□", "✕"].map((sym) => (
+              <span
+                key={sym}
+                className="flex h-[18px] w-[18px] cursor-default items-center justify-center text-[10px] font-bold text-black select-none"
+                style={{
+                  background: "#d4d0c8",
+                  borderTop: "1px solid #ffffff",
+                  borderLeft: "1px solid #ffffff",
+                  borderRight: "1px solid #424242",
+                  borderBottom: "1px solid #424242",
+                }}
+                aria-hidden="true"
+              >
+                {sym}
+              </span>
+            ))}
+          </div>
+        </div>
+
+        {/* Menu bar */}
+        <div
+          style={{
+            background: "#d4d0c8",
+            borderBottom: "1px solid #808080",
+            display: "flex",
+            padding: "2px",
+            fontSize: 11,
+          }}
+        >
+          {["File", "Help"].map((item) => (
+            <span
+              key={item}
+              className="win-menuitem"
+              style={{ padding: "2px 8px", cursor: "default", fontSize: 11 }}
+            >
+              <span style={{ textDecoration: "underline" }}>{item[0]}</span>
+              {item.slice(1)}
+            </span>
+          ))}
+        </div>
+
+        {/* Window body */}
+        <div style={{ background: "#d4d0c8", padding: "16px 20px 20px" }}>
+          {/* Beta badge */}
+          <div
+            className="mb-5 inline-flex items-center gap-2 px-3 py-1"
+            style={{
+              background: "#d4d0c8",
+              border: "1px solid #808080",
+              fontSize: 11,
+            }}
+          >
+            <span
+              className="h-2 w-2 rounded-full"
+              style={{ background: "#008000" }}
+              aria-hidden="true"
+            />
+            <span style={{ color: "#000" }}>
+              AI-Powered System Design — Now in Beta
+            </span>
+          </div>
+
+          {/* Headline */}
+          <h1 className="mb-1 text-2xl font-bold leading-tight tracking-tight" style={{ color: "#000000", fontSize: 28 }}>
+            Design System Architectures
+          </h1>
+          <h2
+            className="mb-4 font-bold"
+            style={{
+              fontSize: 24,
+              color: "#0054e3",
+            }}
+          >
+            with Artificial Intelligence
+          </h2>
+
+          {/* Separator */}
+          <div style={{ borderTop: "1px solid #808080", borderBottom: "1px solid #ffffff", marginBottom: 12 }} />
+
+          {/* Description */}
+          <p className="mb-6 leading-relaxed" style={{ fontSize: 12, color: "#000", maxWidth: 500 }}>
+            Turn ideas into production-grade architectures using natural language.
+            Chat, iterate, and visualize — all in real time.
+            <br />
+            <strong>No diagramming tools required.</strong>
+          </p>
+
+          {/* Feature bullets */}
+          <div className="mb-6 space-y-1" style={{ fontSize: 11 }}>
+            {[
+              "Generate architecture diagrams from plain English",
+              "Iterate with AI chat — add caching, microservices, monitoring",
+              "Export to Mermaid.js, share with your team",
+            ].map((item) => (
+              <div key={item} className="flex items-start gap-2">
+                <span style={{ color: "#008000", fontWeight: "bold" }}>✓</span>
+                <span>{item}</span>
+              </div>
+            ))}
+          </div>
+
+          {/* CTA buttons */}
+          <div className="flex flex-wrap items-center gap-3">
+            <Link href="/copilot">
+              <button className="win-btn-primary" style={{ minWidth: 140 }}>
+                Try Now — It&apos;s Free
+              </button>
+            </Link>
+            <button
+              className="win-btn"
+              style={{ minWidth: 120 }}
+              onClick={() =>
+                document
+                  .getElementById("demo")
+                  ?.scrollIntoView({ behavior: "smooth" })
+              }
+            >
+              ▶ View Demo
+            </button>
+            <button
+              className="win-btn"
+              onClick={() =>
+                document
+                  .getElementById("features")
+                  ?.scrollIntoView({ behavior: "smooth" })
+              }
+            >
+              Learn More
+            </button>
+          </div>
+        </div>
+
+        {/* Status bar */}
+        <div className="win-statusbar">
+          <div className="win-statusbar-panel flex-1">
+            <span style={{ color: "#0054e3" }}>http://archia.ai/copilot</span>
+          </div>
+          <div className="win-statusbar-panel">
+            <span className="h-2 w-2 rounded-full inline-block mr-1" style={{ background: "#008000" }} />
+            Online
+          </div>
+          <div className="win-statusbar-panel">Zone: Internet</div>
+        </div>
       </div>
 
-      {/* ── Badge ───────────────────────────────────── */}
-      <div className="relative z-10 mb-8 flex items-center gap-2 rounded-full border border-white/[0.08] bg-white/[0.03] px-4 py-1.5 text-xs text-zinc-400 animate-fade-in-up backdrop-blur-sm">
-        <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-[breathe_3s_ease-in-out_infinite]" />
-        AI-Powered System Design — Now in Beta
-      </div>
-
-      {/* ── Headline ────────────────────────────────── */}
-      <h1
-        className="relative z-10 max-w-4xl text-center text-5xl font-bold leading-[1.1] tracking-tight sm:text-6xl lg:text-7xl animate-fade-in-up"
-        style={{ animationDelay: "0.1s" }}
-      >
-        Design System{" "}
-        <br className="hidden sm:block" />
-        Architectures{" "}
-        <span className="gradient-text">with AI</span>
-      </h1>
-
-      {/* ── Sub-headline ────────────────────────────── */}
-      <p
-        className="relative z-10 mt-6 max-w-xl text-center text-lg leading-relaxed text-zinc-400 animate-fade-in-up"
+      {/* ── Mini App Preview Window ── */}
+      <div
+        className="win-window mt-6 w-full max-w-3xl animate-fade-in-up"
         style={{ animationDelay: "0.2s" }}
       >
-        Turn ideas into production-grade architectures using natural language.
-        Chat, iterate, and visualize — all in real time.
-      </p>
+        {/* Title bar */}
+        <div className="win-titlebar">
+          <div className="flex h-4 w-4 shrink-0 items-center justify-center" aria-hidden="true">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
+              <path d="M12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83z" />
+            </svg>
+          </div>
+          <span className="flex-1 text-xs font-bold text-white">Archia Copilot — Architecture Preview</span>
+          <div className="flex gap-1" aria-hidden="true">
+            {["_", "□", "✕"].map((sym) => (
+              <span
+                key={sym}
+                className="flex h-[18px] w-[18px] cursor-default items-center justify-center text-[10px] font-bold text-black select-none"
+                style={{
+                  background: "#d4d0c8",
+                  borderTop: "1px solid #ffffff",
+                  borderLeft: "1px solid #ffffff",
+                  borderRight: "1px solid #424242",
+                  borderBottom: "1px solid #424242",
+                }}
+              >
+                {sym}
+              </span>
+            ))}
+          </div>
+        </div>
 
-      {/* ── CTA Buttons ─────────────────────────────── */}
-      <div
-        className="relative z-10 mt-10 flex flex-col items-center gap-4 sm:flex-row animate-fade-in-up"
-        style={{ animationDelay: "0.3s" }}
-      >
-        <Link
-          href="/copilot"
-          className="group flex h-12 items-center gap-2.5 rounded-full bg-gradient-to-r from-accent-1 to-accent-2 px-8 text-sm font-medium text-white shadow-xl shadow-accent-1/25 transition-all duration-300 hover:shadow-accent-1/40 hover:brightness-110"
-        >
-          Try Now — It&apos;s Free
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="transition-transform group-hover:translate-x-1">
-            <path d="M5 12h14" />
-            <path d="m12 5 7 7-7 7" />
-          </svg>
-        </Link>
-        <button
-          onClick={() => document.getElementById("demo")?.scrollIntoView({ behavior: "smooth" })}
-          className="flex h-12 items-center gap-2 rounded-full border border-white/[0.1] bg-white/[0.03] px-8 text-sm font-medium text-zinc-300 transition-all duration-200 hover:border-white/[0.2] hover:bg-white/[0.06]"
-        >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <polygon points="6 3 20 12 6 21 6 3" />
-          </svg>
-          View Demo
-        </button>
-      </div>
-
-      {/* ── Hero Visual — Mock App Preview ──────────── */}
-      <div
-        className="relative z-10 mt-20 w-full max-w-5xl animate-fade-in-up"
-        style={{ animationDelay: "0.5s" }}
-      >
-        <div className="gradient-border rounded-2xl overflow-hidden">
-          {/* Glow behind */}
-          <div className="pointer-events-none absolute -inset-4 rounded-3xl bg-accent-1/[0.06] blur-[40px]" />
-          <div className="relative rounded-2xl border border-white/[0.08] bg-[#0c0c0e] shadow-2xl shadow-black/50 overflow-hidden">
-            {/* Window chrome */}
-            <div className="flex items-center gap-2 border-b border-white/[0.06] px-4 py-3">
-              <div className="flex gap-1.5">
-                <span className="h-2.5 w-2.5 rounded-full bg-zinc-700" />
-                <span className="h-2.5 w-2.5 rounded-full bg-zinc-700" />
-                <span className="h-2.5 w-2.5 rounded-full bg-zinc-700" />
-              </div>
-              <div className="mx-auto flex items-center gap-2 rounded-md bg-white/[0.04] px-3 py-1">
-                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#52525b" strokeWidth="2">
-                  <rect width="18" height="11" x="3" y="11" rx="2" ry="2" />
-                  <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+        <div style={{ background: "#d4d0c8" }}>
+          <div className="flex" style={{ height: 320 }}>
+            {/* Chat Panel */}
+            <div
+              className="flex flex-col"
+              style={{
+                width: "35%",
+                borderRight: "1px solid #808080",
+                borderRightStyle: "solid",
+              }}
+            >
+              {/* Chat header */}
+              <div
+                style={{
+                  borderBottom: "1px solid #808080",
+                  padding: "4px 8px",
+                  background: "#d4d0c8",
+                  fontSize: 11,
+                  fontWeight: "bold",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 4,
+                }}
+              >
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#0054e3" strokeWidth="2">
+                  <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
                 </svg>
-                <span className="text-[10px] text-zinc-500">archia.ai/copilot</span>
+                Archia Chat
+              </div>
+
+              <div className="flex-1 space-y-2 overflow-hidden p-2" style={{ background: "#ffffff" }}>
+                {/* User message */}
+                <div
+                  className="ml-auto w-[90%] p-2"
+                  style={{
+                    background: "#0054e3",
+                    color: "#ffffff",
+                    fontSize: 11,
+                    borderTop: "1px solid #1a6af5",
+                    borderLeft: "1px solid #1a6af5",
+                    borderRight: "1px solid #003b9e",
+                    borderBottom: "1px solid #003b9e",
+                  }}
+                >
+                  Design a scalable e-commerce backend with caching
+                </div>
+                {/* AI message */}
+                <div
+                  className="w-[90%] p-2"
+                  style={{
+                    background: "#d4d0c8",
+                    fontSize: 11,
+                    borderTop: "1px solid #ffffff",
+                    borderLeft: "1px solid #ffffff",
+                    borderRight: "1px solid #808080",
+                    borderBottom: "1px solid #808080",
+                  }}
+                >
+                  I&apos;ve designed a scalable architecture with load balancing, Redis caching, and async processing...
+                </div>
+                {/* User message 2 */}
+                <div
+                  className="ml-auto w-[80%] p-2"
+                  style={{
+                    background: "#0054e3",
+                    color: "#ffffff",
+                    fontSize: 11,
+                    borderTop: "1px solid #1a6af5",
+                    borderLeft: "1px solid #1a6af5",
+                    borderRight: "1px solid #003b9e",
+                    borderBottom: "1px solid #003b9e",
+                  }}
+                >
+                  Add monitoring and observability
+                </div>
+                {/* Typing indicator */}
+                <div
+                  className="w-24 p-2"
+                  style={{
+                    background: "#d4d0c8",
+                    fontSize: 11,
+                    borderTop: "1px solid #ffffff",
+                    borderLeft: "1px solid #ffffff",
+                    borderRight: "1px solid #808080",
+                    borderBottom: "1px solid #808080",
+                  }}
+                >
+                  <div className="flex gap-1">
+                    <div className="typing-dot h-1.5 w-1.5 rounded-full" style={{ background: "#0054e3" }} />
+                    <div className="typing-dot h-1.5 w-1.5 rounded-full" style={{ background: "#0054e3" }} />
+                    <div className="typing-dot h-1.5 w-1.5 rounded-full" style={{ background: "#0054e3" }} />
+                  </div>
+                </div>
+              </div>
+
+              {/* Input */}
+              <div style={{ borderTop: "1px solid #808080", padding: 4, background: "#d4d0c8" }}>
+                <div className="flex gap-1">
+                  <div
+                    className="win-inset flex-1 px-2"
+                    style={{ height: 20, background: "#ffffff", fontSize: 11, color: "#808080" }}
+                  >
+                    Describe your architecture...
+                  </div>
+                  <button
+                    className="win-btn"
+                    style={{ padding: "0 6px", fontSize: 10, minWidth: 32 }}
+                  >
+                    Send
+                  </button>
+                </div>
               </div>
             </div>
 
-            {/* Mock App UI */}
-            <div className="flex h-[400px] sm:h-[480px]">
-              {/* Chat Panel Mock */}
-              <div className="w-[35%] border-r border-white/[0.06] p-4 flex flex-col">
-                <div className="flex items-center gap-2 mb-4">
-                  <div className="h-6 w-6 rounded-lg bg-gradient-to-br from-accent-1 to-accent-2" />
-                  <span className="text-xs font-medium text-zinc-300">Archia</span>
-                  <div className="ml-auto flex items-center gap-1">
-                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-                    <span className="text-[9px] text-zinc-600">Online</span>
-                  </div>
-                </div>
-
-                <div className="flex-1 space-y-3 overflow-hidden">
-                  {/* User msg */}
-                  <div className="ml-auto w-[85%] rounded-xl rounded-tr-sm bg-gradient-to-r from-accent-1 to-accent-2 p-3">
-                    <p className="text-[11px] leading-relaxed text-white">Design a scalable e-commerce backend with caching and message queues</p>
-                  </div>
-                  {/* AI msg */}
-                  <div className="flex gap-2">
-                    <div className="mt-1 h-5 w-5 shrink-0 rounded-md bg-accent-1/20" />
-                    <div className="w-[85%] rounded-xl rounded-tl-sm border border-white/[0.06] bg-white/[0.03] p-3">
-                      <p className="text-[11px] leading-relaxed text-zinc-300">I&apos;ve designed a scalable architecture with load balancing, Redis caching, and async processing via message queues...</p>
-                    </div>
-                  </div>
-                  {/* User msg 2 */}
-                  <div className="ml-auto w-[75%] rounded-xl rounded-tr-sm bg-gradient-to-r from-accent-1 to-accent-2 p-3">
-                    <p className="text-[11px] leading-relaxed text-white">Add monitoring and observability</p>
-                  </div>
-                  {/* AI typing */}
-                  <div className="flex gap-2">
-                    <div className="mt-1 h-5 w-5 shrink-0 rounded-md bg-accent-1/20" />
-                    <div className="rounded-xl rounded-tl-sm border border-white/[0.06] bg-white/[0.03] px-4 py-3">
-                      <div className="flex gap-1">
-                        <div className="typing-dot h-1.5 w-1.5 rounded-full bg-accent-3" />
-                        <div className="typing-dot h-1.5 w-1.5 rounded-full bg-accent-3" />
-                        <div className="typing-dot h-1.5 w-1.5 rounded-full bg-accent-3" />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Input */}
-                <div className="mt-3 flex items-center gap-2 rounded-xl border border-white/[0.06] bg-white/[0.02] px-3 py-2">
-                  <span className="flex-1 text-[10px] text-zinc-600">Describe your architecture...</span>
-                  <div className="h-6 w-6 rounded-lg bg-gradient-to-r from-accent-1 to-accent-2 flex items-center justify-center">
-                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5"><path d="M22 2 11 13" /><path d="M22 2 15 22 11 13 2 9z" /></svg>
-                  </div>
-                </div>
+            {/* Diagram Panel */}
+            <div className="relative flex flex-1 flex-col">
+              {/* Diagram header */}
+              <div
+                style={{
+                  borderBottom: "1px solid #808080",
+                  padding: "4px 8px",
+                  background: "#d4d0c8",
+                  fontSize: 11,
+                  fontWeight: "bold",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 4,
+                }}
+              >
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#0054e3" strokeWidth="2">
+                  <path d="M12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83z" />
+                </svg>
+                Architecture Diagram
               </div>
 
-              {/* Diagram Panel Mock */}
-              <div className="flex-1 relative p-6 flex items-center justify-center">
+              <div className="relative flex flex-1 items-center justify-center p-4" style={{ background: "#ffffff" }}>
                 {/* Grid bg */}
-                <div className="pointer-events-none absolute inset-0 opacity-[0.03]" style={{ backgroundImage: "radial-gradient(circle, #fff 1px, transparent 1px)", backgroundSize: "20px 20px" }} />
-                <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-                  <div className="h-[300px] w-[300px] rounded-full bg-accent-1/[0.06] blur-[80px]" />
-                </div>
-
-                {/* Mock diagram nodes */}
-                <div className="relative w-full max-w-md">
-                  {/* Client */}
-                  <div className="mx-auto w-32 rounded-lg bg-indigo-500/90 px-3 py-2 text-center text-[10px] font-medium text-white shadow-lg shadow-indigo-500/20">Client App</div>
-                  <div className="mx-auto h-6 w-px bg-zinc-600" />
-                  {/* LB */}
-                  <div className="mx-auto w-32 rounded-lg bg-purple-500/90 px-3 py-2 text-center text-[10px] font-medium text-white shadow-lg shadow-purple-500/20">Load Balancer</div>
-                  <div className="mx-auto h-6 w-px bg-zinc-600" />
-                  {/* API row */}
-                  <div className="flex items-start justify-center gap-4">
-                    <div>
-                      <div className="w-28 rounded-lg bg-blue-500/90 px-3 py-2 text-center text-[10px] font-medium text-white shadow-lg shadow-blue-500/20">API Server 1</div>
-                      <div className="mx-auto h-5 w-px bg-zinc-600" />
-                    </div>
-                    <div>
-                      <div className="w-28 rounded-lg bg-blue-500/90 px-3 py-2 text-center text-[10px] font-medium text-white shadow-lg shadow-blue-500/20">API Server 2</div>
-                      <div className="mx-auto h-5 w-px bg-zinc-600" />
-                    </div>
-                  </div>
-                  {/* Bottom row */}
+                <div
+                  className="pointer-events-none absolute inset-0 opacity-20"
+                  style={{
+                    backgroundImage:
+                      "linear-gradient(#d4d0c8 1px, transparent 1px), linear-gradient(90deg, #d4d0c8 1px, transparent 1px)",
+                    backgroundSize: "20px 20px",
+                  }}
+                  aria-hidden="true"
+                />
+                <div className="relative w-full max-w-xs space-y-2">
+                  <div className="mx-auto w-28 py-1.5 text-center text-[10px] font-bold" style={{ background: "#000080", color: "#ffffff", border: "2px outset #000080" }}>Client App</div>
+                  <div className="mx-auto h-4 w-px" style={{ background: "#000" }} />
+                  <div className="mx-auto w-28 py-1.5 text-center text-[10px] font-bold" style={{ background: "#800080", color: "#ffffff", border: "2px outset #800080" }}>Load Balancer</div>
+                  <div className="mx-auto h-4 w-px" style={{ background: "#000" }} />
                   <div className="flex items-start justify-center gap-3">
-                    <div className="w-24 rounded-lg bg-amber-500/90 px-2 py-2 text-center text-[10px] font-medium text-black shadow-lg shadow-amber-500/20">Redis</div>
-                    <div className="w-24 rounded-lg bg-emerald-500/90 px-2 py-2 text-center text-[10px] font-medium text-white shadow-lg shadow-emerald-500/20">PostgreSQL</div>
-                    <div className="w-24 rounded-lg bg-pink-500/90 px-2 py-2 text-center text-[10px] font-medium text-white shadow-lg shadow-pink-500/20">Queue</div>
+                    <div className="w-24 py-1.5 text-center text-[10px] font-bold" style={{ background: "#000080", color: "#ffffff", border: "2px outset #000080" }}>API Server 1</div>
+                    <div className="w-24 py-1.5 text-center text-[10px] font-bold" style={{ background: "#000080", color: "#ffffff", border: "2px outset #000080" }}>API Server 2</div>
+                  </div>
+                  <div className="mx-auto h-4 w-px" style={{ background: "#000" }} />
+                  <div className="flex items-start justify-center gap-2">
+                    <div className="w-20 py-1.5 text-center text-[10px] font-bold" style={{ background: "#808000", color: "#ffffff", border: "2px outset #808000" }}>Redis</div>
+                    <div className="w-20 py-1.5 text-center text-[10px] font-bold" style={{ background: "#008000", color: "#ffffff", border: "2px outset #008000" }}>PostgreSQL</div>
+                    <div className="w-20 py-1.5 text-center text-[10px] font-bold" style={{ background: "#800000", color: "#ffffff", border: "2px outset #800000" }}>Queue</div>
                   </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
-      </div>
 
-      {/* ── Scroll indicator ────────────────────────── */}
-      <div className="relative z-10 mt-16 mb-8 flex flex-col items-center gap-2 animate-[breathe_3s_ease-in-out_infinite]">
-        <span className="text-[10px] uppercase tracking-widest text-zinc-600">Scroll to explore</span>
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#52525b" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M12 5v14" />
-          <path d="m19 12-7 7-7-7" />
-        </svg>
+          {/* Status bar */}
+          <div className="win-statusbar">
+            <div className="win-statusbar-panel flex-1">Rendered via mermaid.js</div>
+            <div className="win-statusbar-panel">100%</div>
+          </div>
+        </div>
       </div>
     </section>
   );
